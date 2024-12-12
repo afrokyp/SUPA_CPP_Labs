@@ -24,6 +24,11 @@ public:
   virtual void printInfo(); //Dump parameter info about the current function (Overridable)
   virtual double callFunction(double x); //Call the function with value x (Overridable)
 
+
+  // Metropolis sampling declaration in the base function so every other function in CustomFunctions can use it
+  std::vector<double> sampleMetropolis(int num_samples, double step_size);
+
+
   //Protected members can be accessed by child classes but not users
 protected:
   double m_RMin;

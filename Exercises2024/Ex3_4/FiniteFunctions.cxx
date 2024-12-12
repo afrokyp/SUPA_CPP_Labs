@@ -1,6 +1,9 @@
+// Afroditi Kyprianou, 27.11.2024
+
 #include <iostream>
 #include <string>
 #include <vector>
+#include <cmath>
 #include "FiniteFunctions.h"
 #include <filesystem> //To check extensions in a nice way
 
@@ -13,14 +16,16 @@ FiniteFunction::FiniteFunction(){
   m_RMin = -5.0;
   m_RMax = 5.0;
   this->checkPath("DefaultFunction");
-  m_Integral = NULL;
+  //m_Integral = NULL; changing it to 0.0 because when I run the Test_CustomFunctions it fails, and the null only works for pointers and it's problematic for numerical types like double
+  m_Integral = 0.0;
 }
 
 //initialised constructor
 FiniteFunction::FiniteFunction(double range_min, double range_max, std::string outfile){
   m_RMin = range_min;
   m_RMax = range_max;
-  m_Integral = NULL;
+  // m_Integral = NULL;
+  m_Integral = 0.0;
   this->checkPath(outfile); //Use provided string to name output files
 }
 
@@ -63,14 +68,24 @@ Integration by hand (output needed to normalise function when plotting)
 */ 
 double FiniteFunction::integrate(int Ndiv){ //private
   //ToDo write an integrator
-  return -99;  
+  //return -99;  // -> changing the function to fix the situation
+  double step = (m_RMax - m_RMin) / Ndiv; // Step size
+    double sum = 0.0;
+
+    // Apply the trapezoidal rule
+    for (int i = 0; i < Ndiv; ++i) {
+        double x1 = m_RMin + i * step;
+        double x2 = m_RMin + (i + 1) * step;
+        sum += 0.5 * step * (callFunction(x1) + callFunction(x2));
+    }
+    return sum; // Return the integral value
 }
 double FiniteFunction::integral(int Ndiv) { //public
   if (Ndiv <= 0){
     std::cout << "Invalid number of divisions for integral, setting Ndiv to 1000" <<std::endl;
     Ndiv = 1000;
   }
-  if (m_Integral == NULL || Ndiv != m_IntDiv){
+  if (m_Integral == 0.0 || Ndiv != m_IntDiv){
     m_IntDiv = Ndiv;
     m_Integral = this->integrate(Ndiv);
     return m_Integral;
@@ -140,7 +155,7 @@ std::vector< std::pair<double,double> > FiniteFunction::scanFunction(int Nscan){
   double step = (m_RMax - m_RMin)/(double)Nscan;
   double x = m_RMin;
   //We use the integral to normalise the function points
-  if (m_Integral == NULL) {
+  if (m_Integral == 0.0) {
     std::cout << "Integral not set, doing it now" << std::endl;
     this->integral(Nscan);
     std::cout << "integral: " << m_Integral << ", calculated using " << Nscan << " divisions" << std::endl;
@@ -235,3 +250,4 @@ void FiniteFunction::generatePlot(Gnuplot &gp){
     gp.send1d(m_samples);
   }
 }
+
